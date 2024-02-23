@@ -1,0 +1,6 @@
+env/
+documentation.md
+to-do.txt
+file.log
+__.py
+__pycache__/
