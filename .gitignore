@@ -4,3 +4,6 @@ to-do.txt
 file.log
 __.py
 __pycache__/
+log_config.py
+start-scheduler.sh
+start-webserver.sh

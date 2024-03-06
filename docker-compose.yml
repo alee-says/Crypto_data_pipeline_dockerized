@@ -17,23 +17,6 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  webserver:
-    image: 'puckel/docker-airflow:1.10.9'
-    depends_on:
-      - kafka
-    volumes:
-      - ./dags:/usr/local/airflow/dags
-    ports:
-      - '8080:8080'
-    command: webserver
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://user:password@postgres/crypto
-      - AIRFLOW__CORE__FERNET_KEY='EPQSEvFWiwfcQoHMAGiYnr8Yd1vsj29gSeTcd4JcH10='
-      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
-      - AIRFLOW__CORE__DAG_DISCOVERY_SAFE_MODE=True
-      - AIRFLOW__CORE__LOAD_EXAMPLES=False
-
   postgres:
     image: 'postgres:latest'
     environment:
@@ -42,3 +25,41 @@ services:
       - POSTGRES_DB=crypto
     ports:
       - '5432:5432'
+
+  webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    ports:
+      - '8080:8080'
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://user:password@postgres/crypto
+      - AIRFLOW__CORE__FERNET_KEY='EPQSEvFWiwfcQoHMAGiYnr8Yd1vsj29gSeTcd4JcH10='
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
+      - AIRFLOW__CORE__DAG_DISCOVERY_SAFE_MODE=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    command: webserver
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - postgres
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://user:password@postgres/crypto
+      - AIRFLOW__CORE__FERNET_KEY='EPQSEvFWiwfcQoHMAGiYnr8Yd1vsj29gSeTcd4JcH10='
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
+      - AIRFLOW__CORE__DAG_DISCOVERY_SAFE_MODE=True
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    command: scheduler
